@@ -1,0 +1,5 @@
+var _user$project$Cards$blank = F4(
+	function (name, str, hp, cost) {
+		return {name: name, str: str, maxStr: str, hp: hp, maxHp: hp, cost: cost};
+	});
+var _user$project$Cards$b = A4(_user$project$Cards$blank, 'fizz', 1, 1, 1);
