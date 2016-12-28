@@ -8209,22 +8209,331 @@ var _elm_lang$svg$Svg_Attributes$additive = _elm_lang$virtual_dom$VirtualDom$att
 var _elm_lang$svg$Svg_Attributes$accumulate = _elm_lang$virtual_dom$VirtualDom$attribute('accumulate');
 var _elm_lang$svg$Svg_Attributes$accelerate = _elm_lang$virtual_dom$VirtualDom$attribute('accelerate');
 var _elm_lang$svg$Svg_Attributes$accentHeight = _elm_lang$virtual_dom$VirtualDom$attribute('accent-height');
+var _elm_lang$svg$Svg_Events$on = _elm_lang$virtual_dom$VirtualDom$on;
+var _elm_lang$svg$Svg_Events$simpleOn = F2(
+	function (name, msg) {
+		return A2(
+			_elm_lang$svg$Svg_Events$on,
+			name,
+			_elm_lang$core$Json_Decode$succeed(msg));
+	});
+var _elm_lang$svg$Svg_Events$onBegin = _elm_lang$svg$Svg_Events$simpleOn('begin');
+var _elm_lang$svg$Svg_Events$onEnd = _elm_lang$svg$Svg_Events$simpleOn('end');
+var _elm_lang$svg$Svg_Events$onRepeat = _elm_lang$svg$Svg_Events$simpleOn('repeat');
+var _elm_lang$svg$Svg_Events$onAbort = _elm_lang$svg$Svg_Events$simpleOn('abort');
+var _elm_lang$svg$Svg_Events$onError = _elm_lang$svg$Svg_Events$simpleOn('error');
+var _elm_lang$svg$Svg_Events$onResize = _elm_lang$svg$Svg_Events$simpleOn('resize');
+var _elm_lang$svg$Svg_Events$onScroll = _elm_lang$svg$Svg_Events$simpleOn('scroll');
+var _elm_lang$svg$Svg_Events$onLoad = _elm_lang$svg$Svg_Events$simpleOn('load');
+var _elm_lang$svg$Svg_Events$onUnload = _elm_lang$svg$Svg_Events$simpleOn('unload');
+var _elm_lang$svg$Svg_Events$onZoom = _elm_lang$svg$Svg_Events$simpleOn('zoom');
+var _elm_lang$svg$Svg_Events$onActivate = _elm_lang$svg$Svg_Events$simpleOn('activate');
+var _elm_lang$svg$Svg_Events$onClick = _elm_lang$svg$Svg_Events$simpleOn('click');
+var _elm_lang$svg$Svg_Events$onFocusIn = _elm_lang$svg$Svg_Events$simpleOn('focusin');
+var _elm_lang$svg$Svg_Events$onFocusOut = _elm_lang$svg$Svg_Events$simpleOn('focusout');
+var _elm_lang$svg$Svg_Events$onMouseDown = _elm_lang$svg$Svg_Events$simpleOn('mousedown');
+var _elm_lang$svg$Svg_Events$onMouseMove = _elm_lang$svg$Svg_Events$simpleOn('mousemove');
+var _elm_lang$svg$Svg_Events$onMouseOut = _elm_lang$svg$Svg_Events$simpleOn('mouseout');
+var _elm_lang$svg$Svg_Events$onMouseOver = _elm_lang$svg$Svg_Events$simpleOn('mouseover');
+var _elm_lang$svg$Svg_Events$onMouseUp = _elm_lang$svg$Svg_Events$simpleOn('mouseup');
+var _user$project$Common$Pos = F2(
+	function (a, b) {
+		return {x: a, y: b};
+	});
+var _user$project$Common$MetaCard = F4(
+	function (a, b, c, d) {
+		return {id: a, card: b, active: c, loc: d};
+	});
 var _user$project$Common$Card = F6(
 	function (a, b, c, d, e, f) {
 		return {name: a, maxHp: b, hp: c, maxStr: d, str: e, cost: f};
 	});
-var _user$project$Common$Player = F7(
-	function (a, b, c, d, e, f, g) {
-		return {name: a, maxHp: b, hp: c, wallet: d, hand: e, deck: f, graveyard: g};
+var _user$project$Common$Player = F4(
+	function (a, b, c, d) {
+		return {name: a, maxHp: b, hp: c, wallet: d};
 	});
+var _user$project$Common$Graveyard = function (a) {
+	return {ctor: 'Graveyard', _0: a};
+};
+var _user$project$Common$Deck = function (a) {
+	return {ctor: 'Deck', _0: a};
+};
+var _user$project$Common$Hand = function (a) {
+	return {ctor: 'Hand', _0: a};
+};
 var _user$project$Common$Board = function (a) {
-	return {cards: a};
+	return {ctor: 'Board', _0: a};
 };
 var _user$project$Cards$blank = F4(
 	function (name, str, hp, cost) {
 		return {name: name, str: str, maxStr: str, hp: hp, maxHp: hp, cost: cost};
 	});
 var _user$project$Cards$b = A4(_user$project$Cards$blank, 'fizz', 1, 1, 1);
+var _user$project$Main$updateCards = F2(
+	function (activeCard, card) {
+		return _elm_lang$core$Native_Utils.eq(activeCard.id, card.id) ? _elm_lang$core$Native_Utils.update(
+			card,
+			{active: true}) : _elm_lang$core$Native_Utils.update(
+			card,
+			{active: false});
+	});
+var _user$project$Main$update = F2(
+	function (msg, model) {
+		var _p0 = msg;
+		switch (_p0.ctor) {
+			case 'Active':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							cards: A2(
+								_elm_lang$core$List$map,
+								_user$project$Main$updateCards(_p0._0),
+								model.cards)
+						}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'PlayCard':
+				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+			case 'Tick':
+				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+			default:
+				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+		}
+	});
+var _user$project$Main$cl = F3(
+	function (id, c, l) {
+		return {id: id, card: c, loc: l, active: false};
+	});
+var _user$project$Main$newPlayer = function (name) {
+	return {name: name, maxHp: 50, hp: 50, wallet: 0};
+};
+var _user$project$Main$init = function () {
+	var player2 = _user$project$Main$newPlayer('2');
+	var player1 = _user$project$Main$newPlayer('1');
+	return {
+		ctor: '_Tuple2',
+		_0: {
+			turn: {ctor: '_Tuple2', _0: 0, _1: player1},
+			playerOne: player1,
+			playerTwo: player2,
+			cards: _elm_lang$core$Native_List.fromArray(
+				[
+					A3(
+					_user$project$Main$cl,
+					1,
+					_user$project$Cards$b,
+					_user$project$Common$Hand(player1)),
+					A3(
+					_user$project$Main$cl,
+					2,
+					_user$project$Cards$b,
+					_user$project$Common$Hand(player2)),
+					A3(
+					_user$project$Main$cl,
+					3,
+					_user$project$Cards$b,
+					_user$project$Common$Board(player1)),
+					A3(
+					_user$project$Main$cl,
+					4,
+					_user$project$Cards$b,
+					_user$project$Common$Board(player2)),
+					A3(
+					_user$project$Main$cl,
+					5,
+					_user$project$Cards$b,
+					_user$project$Common$Graveyard(player2)),
+					A3(
+					_user$project$Main$cl,
+					6,
+					_user$project$Cards$b,
+					_user$project$Common$Graveyard(player1)),
+					A3(
+					_user$project$Main$cl,
+					7,
+					_user$project$Cards$b,
+					_user$project$Common$Deck(player1)),
+					A3(
+					_user$project$Main$cl,
+					8,
+					_user$project$Cards$b,
+					_user$project$Common$Deck(player1)),
+					A3(
+					_user$project$Main$cl,
+					9,
+					_user$project$Cards$b,
+					_user$project$Common$Deck(player1)),
+					A3(
+					_user$project$Main$cl,
+					10,
+					_user$project$Cards$b,
+					_user$project$Common$Deck(player2))
+				])
+		},
+		_1: _elm_lang$core$Platform_Cmd$none
+	};
+}();
+var _user$project$Main$newCard = F4(
+	function (name, str, hp, cost) {
+		return {name: name, maxStr: str, str: str, maxHp: hp, hp: hp, cost: cost};
+	});
+var _user$project$Main$Game = F4(
+	function (a, b, c, d) {
+		return {turn: a, playerOne: b, playerTwo: c, cards: d};
+	});
+var _user$project$Main$Tick = function (a) {
+	return {ctor: 'Tick', _0: a};
+};
+var _user$project$Main$subscriptions = function (model) {
+	return A2(_elm_lang$core$Time$every, _elm_lang$core$Time$second, _user$project$Main$Tick);
+};
+var _user$project$Main$PlayCard = function (a) {
+	return {ctor: 'PlayCard', _0: a};
+};
+var _user$project$Main$Active = function (a) {
+	return {ctor: 'Active', _0: a};
+};
+var _user$project$Main$viewCard = F4(
+	function (game, mc, posX, posY) {
+		var color = _elm_lang$core$Native_Utils.eq(mc.active, true) ? '#FFAAFF' : '#111111';
+		var toAttr = function (x) {
+			return A2(
+				_elm_lang$core$Basics_ops['++'],
+				_elm_lang$core$Basics$toString(x),
+				'px');
+		};
+		var nameX = toAttr(posX + 20);
+		var costX = toAttr(posX + 50);
+		var hpX = toAttr(posX + 10);
+		var strX = toAttr(posX + 80);
+		var cardY = 15 * posY;
+		var bottomY = toAttr(110 + cardY);
+		var back = _elm_lang$core$Native_List.fromArray(
+			[
+				A2(
+				_elm_lang$svg$Svg$text$,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$svg$Svg_Attributes$x(nameX),
+						_elm_lang$svg$Svg_Attributes$y(bottomY),
+						_elm_lang$svg$Svg_Attributes$fill('#FFFFFF')
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$svg$Svg$text('BACK')
+					]))
+			]);
+		var topY = toAttr(25 + cardY);
+		var card = mc.card;
+		var front = _elm_lang$core$Native_List.fromArray(
+			[
+				A2(
+				_elm_lang$svg$Svg$text$,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$svg$Svg_Attributes$x(nameX),
+						_elm_lang$svg$Svg_Attributes$y(bottomY),
+						_elm_lang$svg$Svg_Attributes$fill('#FFFFFF')
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$svg$Svg$text(card.name)
+					])),
+				A2(
+				_elm_lang$svg$Svg$text$,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$svg$Svg_Attributes$x(costX),
+						_elm_lang$svg$Svg_Attributes$y(bottomY),
+						_elm_lang$svg$Svg_Attributes$fill('#FFFFFF')
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$svg$Svg$text(
+						_elm_lang$core$Basics$toString(card.cost))
+					])),
+				A2(
+				_elm_lang$svg$Svg$text$,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$svg$Svg_Attributes$x(strX),
+						_elm_lang$svg$Svg_Attributes$y(topY),
+						_elm_lang$svg$Svg_Attributes$fill('#FFFFFF')
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$svg$Svg$text(
+						_elm_lang$core$Basics$toString(card.maxStr))
+					])),
+				A2(
+				_elm_lang$svg$Svg$text$,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$svg$Svg_Attributes$x(hpX),
+						_elm_lang$svg$Svg_Attributes$y(topY),
+						_elm_lang$svg$Svg_Attributes$fill('#FFFFFF')
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$svg$Svg$text(
+						_elm_lang$core$Basics$toString(card.maxHp))
+					]))
+			]);
+		var content = _elm_lang$core$Native_Utils.eq(
+			mc.loc,
+			_user$project$Common$Hand(game.playerTwo)) ? back : front;
+		return A2(
+			_elm_lang$svg$Svg$g,
+			_elm_lang$core$Native_List.fromArray(
+				[]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					A2(
+					_elm_lang$svg$Svg$rect,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$svg$Svg_Attributes$x(
+							_elm_lang$core$Basics$toString(posX)),
+							_elm_lang$svg$Svg_Attributes$y(
+							toAttr(cardY)),
+							_elm_lang$svg$Svg_Attributes$width('100'),
+							_elm_lang$svg$Svg_Attributes$height('125'),
+							_elm_lang$svg$Svg_Attributes$rx('15'),
+							_elm_lang$svg$Svg_Attributes$ry('15'),
+							_elm_lang$svg$Svg_Attributes$fill(color),
+							_elm_lang$svg$Svg_Events$onClick(
+							_user$project$Main$Active(mc))
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[])),
+					A2(
+					_elm_lang$svg$Svg$g,
+					_elm_lang$core$Native_List.fromArray(
+						[]),
+					content)
+				]));
+	});
+var _user$project$Main$cardOffset = F3(
+	function (game, idx, cl) {
+		var y = function () {
+			var _p1 = cl.loc;
+			switch (_p1.ctor) {
+				case 'Board':
+					return _elm_lang$core$Native_Utils.eq(_p1._0, game.playerOne) ? 20 : 10;
+				case 'Hand':
+					return _elm_lang$core$Native_Utils.eq(_p1._0, game.playerOne) ? 30 : 1;
+				case 'Deck':
+					return 100;
+				default:
+					return 100;
+			}
+		}();
+		var gutter = 50;
+		var offset = 150;
+		return A4(_user$project$Main$viewCard, game, cl, gutter + ((idx + 1) * offset), y);
+	});
 var _user$project$Main$view = function (model) {
 	return A2(
 		_elm_lang$svg$Svg$svg,
@@ -8236,95 +8545,17 @@ var _user$project$Main$view = function (model) {
 			]),
 		_elm_lang$core$Native_List.fromArray(
 			[
-				A2(
-				_elm_lang$svg$Svg$circle,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$svg$Svg_Attributes$cx('50'),
-						_elm_lang$svg$Svg_Attributes$cy('50'),
-						_elm_lang$svg$Svg_Attributes$r('55'),
-						_elm_lang$svg$Svg_Attributes$fill('#0B79CE')
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[])),
-				A2(
-				_elm_lang$svg$Svg$line,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$svg$Svg_Attributes$x1('50'),
-						_elm_lang$svg$Svg_Attributes$y1('50'),
-						_elm_lang$svg$Svg_Attributes$x2('10'),
-						_elm_lang$svg$Svg_Attributes$y2('20'),
-						_elm_lang$svg$Svg_Attributes$stroke('#023963')
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[])),
 				_elm_lang$svg$Svg$text(
-				_elm_lang$core$Basics$toString(model))
-			]));
-};
-var _user$project$Main$update = F2(
-	function (msg, model) {
-		var _p0 = msg;
-		if (_p0.ctor === 'Tick') {
-			return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
-		} else {
-			return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
-		}
-	});
-var _user$project$Main$newPlayer = function (name) {
-	return {
-		name: name,
-		maxHp: 50,
-		hp: 50,
-		wallet: 0,
-		hand: _elm_lang$core$Native_List.fromArray(
-			[]),
-		deck: _elm_lang$core$Native_List.fromArray(
-			[_user$project$Cards$b, _user$project$Cards$b, _user$project$Cards$b, _user$project$Cards$b]),
-		graveyard: _elm_lang$core$Native_List.fromArray(
-			[])
-	};
-};
-var _user$project$Main$newBoard = F2(
-	function (player1, player2) {
-		return {
-			cards: {
-				ctor: '_Tuple2',
-				_0: _elm_lang$core$Native_List.fromArray(
+				_elm_lang$core$Basics$toString(model)),
+				A2(
+				_elm_lang$svg$Svg$g,
+				_elm_lang$core$Native_List.fromArray(
 					[]),
-				_1: _elm_lang$core$Native_List.fromArray(
-					[])
-			}
-		};
-	});
-var _user$project$Main$init = function () {
-	var player2 = _user$project$Main$newPlayer('2');
-	var player1 = _user$project$Main$newPlayer('1');
-	return {
-		ctor: '_Tuple2',
-		_0: {
-			turn: {ctor: '_Tuple2', _0: 0, _1: player1},
-			board: A2(_user$project$Main$newBoard, player1, player2),
-			playerOne: player1,
-			playerTwo: player2
-		},
-		_1: _elm_lang$core$Platform_Cmd$none
-	};
-}();
-var _user$project$Main$newCard = F4(
-	function (name, str, hp, cost) {
-		return {name: name, maxStr: str, str: str, maxHp: hp, hp: hp, cost: cost};
-	});
-var _user$project$Main$Game = F4(
-	function (a, b, c, d) {
-		return {turn: a, board: b, playerOne: c, playerTwo: d};
-	});
-var _user$project$Main$Tick = function (a) {
-	return {ctor: 'Tick', _0: a};
-};
-var _user$project$Main$subscriptions = function (model) {
-	return A2(_elm_lang$core$Time$every, _elm_lang$core$Time$second, _user$project$Main$Tick);
+				A2(
+					_elm_lang$core$List$indexedMap,
+					_user$project$Main$cardOffset(model),
+					model.cards))
+			]));
 };
 var _user$project$Main$main = {
 	main: _elm_lang$html$Html_App$program(
