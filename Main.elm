@@ -1,7 +1,6 @@
 module Main exposing (..)
 
 import Html exposing (Html)
-import Html.App as App
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Svg.Events exposing (..)
@@ -10,9 +9,9 @@ import Common exposing (..)
 import Cards exposing (..)
 
 
-main : Program Never
+main : Program Never Game Msg
 main =
-    App.program
+    Html.program
         { init = init
         , view = view
         , update = update
@@ -40,17 +39,9 @@ newPlayer name =
     }
 
 
-type alias Game =
-    { turn : ( Int, Player )
-    , playerOne : Player
-    , playerTwo : Player
-    , cards : List MetaCard
-    }
-
-
 cl : Int -> Card -> Location -> MetaCard
 cl id c l =
-    { id = id, card = c, loc = l, active = False }
+    { id = id, card = c, loc = l, active = False, target = False }
 
 
 init : ( Game, Cmd Msg )
@@ -77,24 +68,78 @@ init =
                 , (cl 9 b (Deck player1))
                 , (cl 10 b (Deck player2))
                 ]
+          , time = 0
           }
         , Cmd.none
         )
 
 
-type Msg
-    = NoOp
-    | Active MetaCard
-    | PlayCard Card
-    | Tick Time
-
-
 updateCards : MetaCard -> MetaCard -> MetaCard
 updateCards activeCard card =
     if activeCard.id == card.id then
-        { card | active = True }
+        { card | active = True, target = False }
     else
-        { card | active = False }
+        { card | active = False, target = False }
+
+
+targetCards : MetaCard -> Game -> MetaCard -> MetaCard
+targetCards activeCard game currentCard =
+    case currentCard.loc of
+        Board player ->
+            if player == game.playerTwo then
+                { currentCard | target = True }
+            else
+                { currentCard | target = False }
+
+        Hand player ->
+            { currentCard | target = False }
+
+        Deck player ->
+            { currentCard | target = False }
+
+        Graveyard player ->
+            { currentCard | target = False }
+
+
+updateCard : MetaCard -> MetaCard -> Card
+updateCard current target =
+    let
+        card =
+            current.card
+    in
+        { card | hp = (card.hp - target.card.str) }
+
+
+resolveAttack : MetaCard -> Game -> MetaCard -> MetaCard
+resolveAttack targetCard game currentCard =
+    let
+        defaultCard =
+            (cl -1 b (Graveyard game.playerOne))
+
+        activeCard =
+            List.filter (\card -> card.active == True) game.cards
+                |> List.head
+                |> Maybe.withDefault defaultCard
+    in
+        if targetCard.id == currentCard.id then
+            { currentCard
+                | target = False
+                , active = False
+                , card = (updateCard currentCard targetCard)
+            }
+        else
+            { currentCard
+                | target = False
+                , active = False
+            }
+
+
+playCard : MetaCard -> Game -> MetaCard -> MetaCard
+playCard activeCard game currentCard =
+    if activeCard.id == currentCard.id then
+        { currentCard | loc = Board game.playerOne, active = False }
+    else
+        currentCard
 
 
 update : Msg -> Game -> ( Game, Cmd Msg )
@@ -103,11 +148,23 @@ update msg model =
         Active metaCard ->
             ( { model | cards = (List.map (updateCards metaCard) model.cards) }, Cmd.none )
 
-        PlayCard card ->
+        Attack metaCard ->
+            ( { model | cards = (List.map (targetCards metaCard model) model.cards) }, Cmd.none )
+
+        Target metaCard ->
+            ( { model | cards = (List.map (resolveAttack metaCard model) model.cards) }, Cmd.none )
+
+        PlayCard metaCard ->
+            ( { model | cards = (List.map (playCard metaCard model) model.cards) }, Cmd.none )
+
+        DrawCard ->
             ( model, Cmd.none )
 
         Tick newTime ->
-            ( model, Cmd.none )
+            ( { model | time = model.time + 1 }, Cmd.none )
+
+        ClearSelection ->
+            ( { model | cards = (List.map (\c -> { c | active = False }) model.cards) }, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )
@@ -116,6 +173,55 @@ update msg model =
 subscriptions : Game -> Sub Msg
 subscriptions model =
     Time.every second Tick
+
+
+actions : Game -> MetaCard -> String -> String -> List (Svg Msg)
+actions game mc x1 y1 =
+    if mc.target == True then
+        [ text_
+            [ x x1
+            , y y1
+            , onClick (Target mc)
+            ]
+            [ text "Target"
+            ]
+        ]
+    else if mc.active == True then
+        case mc.loc of
+            Board player ->
+                if player == game.playerOne then
+                    [ text_
+                        [ x x1
+                        , y y1
+                        , onClick (Attack mc)
+                        ]
+                        [ text "Attack" ]
+                    ]
+                else
+                    []
+
+            Hand player ->
+                [ text_
+                    [ x x1
+                    , y y1
+                    , onClick (PlayCard mc)
+                    ]
+                    [ text "Play" ]
+                ]
+
+            Deck player ->
+                [ text_
+                    [ x x1
+                    , y y1
+                    , onClick DrawCard
+                    ]
+                    [ text "Draw`" ]
+                ]
+
+            Graveyard player ->
+                []
+    else
+        []
 
 
 viewCard : Game -> MetaCard -> Int -> Int -> Svg Msg
@@ -150,16 +256,19 @@ viewCard game mc posX posY =
 
         color =
             if mc.active == True then
-                "#FFAAFF"
+                "#DDCCBB"
+            else if mc.target == True then
+                "#FF55AA"
             else
                 "#111111"
 
         front =
             [ text_ [ x nameX, y bottomY, fill "#FFFFFF" ] [ text card.name ]
             , text_ [ x costX, y bottomY, fill "#FFFFFF" ] [ text (toString card.cost) ]
-            , text_ [ x strX, y topY, fill "#FFFFFF" ] [ text (toString card.maxStr) ]
-            , text_ [ x hpX, y topY, fill "#FFFFFF" ] [ text (toString card.maxHp) ]
+            , text_ [ x strX, y topY, fill "#FFFFFF" ] [ text (toString card.str) ]
+            , text_ [ x hpX, y topY, fill "#FFFFFF" ] [ text (toString card.hp) ]
             ]
+                ++ actions game mc strX (toAttr (cardY + 50))
 
         back =
             [ text_ [ x nameX, y bottomY, fill "#FFFFFF" ] [ text "BACK" ]
@@ -224,6 +333,6 @@ cardOffset game idx cl =
 view : Game -> Html Msg
 view model =
     svg [ viewBox "0 0 800 600", width "800px", height "600px" ]
-        [ text (toString model)
+        [ g [] [ rect [ x "10px", y "10px", width "100px", height "100px" ] [ text_ [ fill "#FFFFFF" ] [ text "hi" ] ] ]
         , g [] (List.indexedMap (cardOffset model) model.cards)
         ]

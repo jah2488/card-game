@@ -1,5 +1,18 @@
 module Common exposing (..)
 
+import Time exposing (Time, second)
+
+
+type Msg
+    = NoOp
+    | Active MetaCard
+    | DrawCard
+    | PlayCard MetaCard
+    | Attack MetaCard
+    | Target MetaCard
+    | Tick Time
+    | ClearSelection
+
 
 type Location
     = Board Player
@@ -8,12 +21,21 @@ type Location
     | Graveyard Player
 
 
+type alias Game =
+    { turn : ( Int, Player )
+    , playerOne : Player
+    , playerTwo : Player
+    , cards : List MetaCard
+    , time : Int
+    }
+
+
 type alias Pos =
     { x : Int, y : Int }
 
 
 type alias MetaCard =
-    { id : Int, card : Card, active : Bool, loc : Location }
+    { id : Int, card : Card, active : Bool, target : Bool, loc : Location }
 
 
 type alias Card =
