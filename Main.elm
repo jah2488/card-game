@@ -160,6 +160,29 @@ cardsOn location cards =
         intToPlacement (amount + 1)
 
 
+checkCards : Game -> MetaCard -> MetaCard
+checkCards model card =
+    let
+        player =
+            case card.loc of
+                Board player ->
+                    player
+
+                Hand player ->
+                    player
+
+                Deck player ->
+                    player
+
+                Graveyard player ->
+                    player
+    in
+        if card.card.hp <= 0 then
+            { card | loc = Graveyard player }
+        else
+            card
+
+
 update : Msg -> Game -> ( Game, Cmd Msg )
 update msg model =
     case msg of
@@ -170,7 +193,7 @@ update msg model =
             ( { model | cards = (List.map (targetCards metaCard model) model.cards) }, Cmd.none )
 
         Target metaCard ->
-            ( { model | cards = (List.map (resolveAttack metaCard model) model.cards) }, Cmd.none )
+            ( { model | cards = List.map (checkCards model) (List.map (resolveAttack metaCard model) model.cards) }, Cmd.none )
 
         PlayCard metaCard ->
             ( { model | cards = (List.map (playCard metaCard model) model.cards) }, Cmd.none )
