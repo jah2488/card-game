@@ -24,10 +24,19 @@ type Placement
     | Seven
     | Eight
     | Nine
+    | OutOfPlay
+
+
+type alias Player =
+    { name : String
+    , maxHp : Int
+    , hp : Int
+    , wallet : Int
+    }
 
 
 type Location
-    = Board Player Placement
+    = Board Player
     | Hand Player
     | Deck Player
     | Graveyard Player
@@ -47,7 +56,7 @@ type alias Pos =
 
 
 type alias MetaCard =
-    { id : Int, card : Card, active : Bool, target : Bool, loc : Location }
+    { id : Int, card : Card, active : Bool, target : Bool, loc : Location, placement : Placement }
 
 
 type alias Card =
@@ -60,9 +69,69 @@ type alias Card =
     }
 
 
-type alias Player =
-    { name : String
-    , maxHp : Int
-    , hp : Int
-    , wallet : Int
-    }
+intToPlacement : Int -> Placement
+intToPlacement n =
+    case n of
+        1 ->
+            One
+
+        2 ->
+            Two
+
+        3 ->
+            Three
+
+        4 ->
+            Four
+
+        5 ->
+            Five
+
+        6 ->
+            Six
+
+        7 ->
+            Seven
+
+        8 ->
+            Eight
+
+        9 ->
+            Nine
+
+        _ ->
+            OutOfPlay
+
+
+placementToInt : Placement -> Int
+placementToInt placement =
+    case placement of
+        One ->
+            1
+
+        Two ->
+            2
+
+        Three ->
+            3
+
+        Four ->
+            4
+
+        Five ->
+            5
+
+        Six ->
+            6
+
+        Seven ->
+            7
+
+        Eight ->
+            8
+
+        Nine ->
+            9
+
+        _ ->
+            0

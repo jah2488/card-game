@@ -8539,6 +8539,35 @@ var _elm_lang$svg$Svg_Events$onMouseMove = _elm_lang$svg$Svg_Events$simpleOn('mo
 var _elm_lang$svg$Svg_Events$onMouseOut = _elm_lang$svg$Svg_Events$simpleOn('mouseout');
 var _elm_lang$svg$Svg_Events$onMouseOver = _elm_lang$svg$Svg_Events$simpleOn('mouseover');
 var _elm_lang$svg$Svg_Events$onMouseUp = _elm_lang$svg$Svg_Events$simpleOn('mouseup');
+var _user$project$Common$placementToInt = function (placement) {
+	var _p0 = placement;
+	switch (_p0.ctor) {
+		case 'One':
+			return 1;
+		case 'Two':
+			return 2;
+		case 'Three':
+			return 3;
+		case 'Four':
+			return 4;
+		case 'Five':
+			return 5;
+		case 'Six':
+			return 6;
+		case 'Seven':
+			return 7;
+		case 'Eight':
+			return 8;
+		case 'Nine':
+			return 9;
+		default:
+			return 0;
+	}
+};
+var _user$project$Common$Player = F4(
+	function (a, b, c, d) {
+		return {name: a, maxHp: b, hp: c, wallet: d};
+	});
 var _user$project$Common$Game = F5(
 	function (a, b, c, d, e) {
 		return {turn: a, playerOne: b, playerTwo: c, cards: d, time: e};
@@ -8547,17 +8576,13 @@ var _user$project$Common$Pos = F2(
 	function (a, b) {
 		return {x: a, y: b};
 	});
-var _user$project$Common$MetaCard = F5(
-	function (a, b, c, d, e) {
-		return {id: a, card: b, active: c, target: d, loc: e};
+var _user$project$Common$MetaCard = F6(
+	function (a, b, c, d, e, f) {
+		return {id: a, card: b, active: c, target: d, loc: e, placement: f};
 	});
 var _user$project$Common$Card = F6(
 	function (a, b, c, d, e, f) {
 		return {name: a, maxHp: b, hp: c, maxStr: d, str: e, cost: f};
-	});
-var _user$project$Common$Player = F4(
-	function (a, b, c, d) {
-		return {name: a, maxHp: b, hp: c, wallet: d};
 	});
 var _user$project$Common$ClearSelection = {ctor: 'ClearSelection'};
 var _user$project$Common$Tick = function (a) {
@@ -8577,6 +8602,7 @@ var _user$project$Common$Active = function (a) {
 	return {ctor: 'Active', _0: a};
 };
 var _user$project$Common$NoOp = {ctor: 'NoOp'};
+var _user$project$Common$OutOfPlay = {ctor: 'OutOfPlay'};
 var _user$project$Common$Nine = {ctor: 'Nine'};
 var _user$project$Common$Eight = {ctor: 'Eight'};
 var _user$project$Common$Seven = {ctor: 'Seven'};
@@ -8586,6 +8612,31 @@ var _user$project$Common$Four = {ctor: 'Four'};
 var _user$project$Common$Three = {ctor: 'Three'};
 var _user$project$Common$Two = {ctor: 'Two'};
 var _user$project$Common$One = {ctor: 'One'};
+var _user$project$Common$intToPlacement = function (n) {
+	var _p1 = n;
+	switch (_p1) {
+		case 1:
+			return _user$project$Common$One;
+		case 2:
+			return _user$project$Common$Two;
+		case 3:
+			return _user$project$Common$Three;
+		case 4:
+			return _user$project$Common$Four;
+		case 5:
+			return _user$project$Common$Five;
+		case 6:
+			return _user$project$Common$Six;
+		case 7:
+			return _user$project$Common$Seven;
+		case 8:
+			return _user$project$Common$Eight;
+		case 9:
+			return _user$project$Common$Nine;
+		default:
+			return _user$project$Common$OutOfPlay;
+	}
+};
 var _user$project$Common$Graveyard = function (a) {
 	return {ctor: 'Graveyard', _0: a};
 };
@@ -8595,10 +8646,9 @@ var _user$project$Common$Deck = function (a) {
 var _user$project$Common$Hand = function (a) {
 	return {ctor: 'Hand', _0: a};
 };
-var _user$project$Common$Board = F2(
-	function (a, b) {
-		return {ctor: 'Board', _0: a, _1: b};
-	});
+var _user$project$Common$Board = function (a) {
+	return {ctor: 'Board', _0: a};
+};
 var _user$project$Cards$blank = F4(
 	function (name, str, hp, cost) {
 		return {name: name, str: str, maxStr: str, hp: hp, maxHp: hp, cost: cost};
@@ -8966,7 +9016,7 @@ var _user$project$Main$cardOffset = F3(
 		var gutter = 50;
 		var offset = 250;
 		var x = function () {
-			var place = A2(
+			var place = _elm_lang$core$Native_Utils.eq(cl.placement, _user$project$Common$OutOfPlay) ? A2(
 				_elm_lang$core$Maybe$withDefault,
 				idx,
 				A2(
@@ -8977,8 +9027,8 @@ var _user$project$Main$cardOffset = F3(
 						function (x) {
 							return _elm_lang$core$Native_Utils.eq(x.loc, cl.loc);
 						},
-						game.cards)));
-			return gutter + ((((place + 1) * offset) / 2) | 0);
+						game.cards))) : _user$project$Common$placementToInt(cl.placement);
+			return gutter + (((place * offset) / 2) | 0);
 		}();
 		return A4(_user$project$Main$viewCard, game, cl, x, y);
 	});
@@ -8987,50 +9037,26 @@ var _user$project$Main$subscriptions = function (model) {
 };
 var _user$project$Main$cardsOn = F2(
 	function (location, cards) {
-		var cardCount = _elm_lang$core$List$length(
+		var amount = _elm_lang$core$List$length(
 			A2(
 				_elm_lang$core$List$filter,
 				function (x) {
 					return _elm_lang$core$Native_Utils.eq(x.loc, location);
 				},
 				cards));
-		var _p2 = cardCount + 1;
-		switch (_p2) {
-			case 1:
-				return _user$project$Common$One;
-			case 2:
-				return _user$project$Common$Two;
-			case 3:
-				return _user$project$Common$Three;
-			case 4:
-				return _user$project$Common$Four;
-			case 5:
-				return _user$project$Common$Five;
-			case 6:
-				return _user$project$Common$Six;
-			case 7:
-				return _user$project$Common$Seven;
-			case 8:
-				return _user$project$Common$Eight;
-			case 9:
-				return _user$project$Common$Nine;
-			default:
-				return _user$project$Common$One;
-		}
+		return _user$project$Common$intToPlacement(amount + 1);
 	});
 var _user$project$Main$playCard = F3(
 	function (activeCard, game, currentCard) {
 		return _elm_lang$core$Native_Utils.eq(activeCard.id, currentCard.id) ? _elm_lang$core$Native_Utils.update(
 			currentCard,
 			{
-				loc: A2(
-					_user$project$Common$Board,
-					game.playerOne,
-					A2(
-						_user$project$Main$cardsOn,
-						A2(_user$project$Common$Board, game.playerOne, _user$project$Common$One),
-						game.cards)),
-				active: false
+				loc: _user$project$Common$Board(game.playerOne),
+				active: false,
+				placement: A2(
+					_user$project$Main$cardsOn,
+					_user$project$Common$Board(game.playerOne),
+					game.cards)
 			}) : currentCard;
 	});
 var _user$project$Main$updateCard = F2(
@@ -9042,10 +9068,10 @@ var _user$project$Main$updateCard = F2(
 	});
 var _user$project$Main$targetCards = F3(
 	function (activeCard, game, currentCard) {
-		var _p3 = currentCard.loc;
-		switch (_p3.ctor) {
+		var _p2 = currentCard.loc;
+		switch (_p2.ctor) {
 			case 'Board':
-				return _elm_lang$core$Native_Utils.eq(_p3._0, game.playerTwo) ? _elm_lang$core$Native_Utils.update(
+				return _elm_lang$core$Native_Utils.eq(_p2._0, game.playerTwo) ? _elm_lang$core$Native_Utils.update(
 					currentCard,
 					{target: true}) : _elm_lang$core$Native_Utils.update(
 					currentCard,
@@ -9072,17 +9098,18 @@ var _user$project$Main$updateCards = F2(
 			card,
 			{active: false, target: false});
 	});
-var _user$project$Main$cl = F3(
-	function (id, c, l) {
-		return {id: id, card: c, loc: l, active: false, target: false};
+var _user$project$Main$cl = F4(
+	function (id, c, l, p) {
+		return {id: id, card: c, loc: l, active: false, target: false, placement: p};
 	});
 var _user$project$Main$resolveAttack = F3(
 	function (targetCard, game, currentCard) {
-		var defaultCard = A3(
+		var defaultCard = A4(
 			_user$project$Main$cl,
 			-1,
 			_user$project$Cards$bith,
-			_user$project$Common$Graveyard(game.playerOne));
+			_user$project$Common$Graveyard(game.playerOne),
+			_user$project$Common$OutOfPlay);
 		var activeCard = A2(
 			_elm_lang$core$Maybe$withDefault,
 			defaultCard,
@@ -9105,8 +9132,8 @@ var _user$project$Main$resolveAttack = F3(
 	});
 var _user$project$Main$update = F2(
 	function (msg, model) {
-		var _p4 = msg;
-		switch (_p4.ctor) {
+		var _p3 = msg;
+		switch (_p3.ctor) {
 			case 'Active':
 				return {
 					ctor: '_Tuple2',
@@ -9115,7 +9142,7 @@ var _user$project$Main$update = F2(
 						{
 							cards: A2(
 								_elm_lang$core$List$map,
-								_user$project$Main$updateCards(_p4._0),
+								_user$project$Main$updateCards(_p3._0),
 								model.cards)
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
@@ -9128,7 +9155,7 @@ var _user$project$Main$update = F2(
 						{
 							cards: A2(
 								_elm_lang$core$List$map,
-								A2(_user$project$Main$targetCards, _p4._0, model),
+								A2(_user$project$Main$targetCards, _p3._0, model),
 								model.cards)
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
@@ -9141,7 +9168,7 @@ var _user$project$Main$update = F2(
 						{
 							cards: A2(
 								_elm_lang$core$List$map,
-								A2(_user$project$Main$resolveAttack, _p4._0, model),
+								A2(_user$project$Main$resolveAttack, _p3._0, model),
 								model.cards)
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
@@ -9154,7 +9181,7 @@ var _user$project$Main$update = F2(
 						{
 							cards: A2(
 								_elm_lang$core$List$map,
-								A2(_user$project$Main$playCard, _p4._0, model),
+								A2(_user$project$Main$playCard, _p3._0, model),
 								model.cards)
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
@@ -9204,102 +9231,116 @@ var _user$project$Main$init = function () {
 			playerTwo: player2,
 			cards: {
 				ctor: '::',
-				_0: A3(
+				_0: A4(
 					_user$project$Main$cl,
 					1,
 					_user$project$Cards$bith,
-					_user$project$Common$Hand(player1)),
+					_user$project$Common$Hand(player1),
+					_user$project$Common$OutOfPlay),
 				_1: {
 					ctor: '::',
-					_0: A3(
+					_0: A4(
 						_user$project$Main$cl,
 						11,
 						_user$project$Cards$cat,
-						_user$project$Common$Hand(player1)),
+						_user$project$Common$Hand(player1),
+						_user$project$Common$OutOfPlay),
 					_1: {
 						ctor: '::',
-						_0: A3(
+						_0: A4(
 							_user$project$Main$cl,
 							12,
 							_user$project$Cards$dino,
-							_user$project$Common$Hand(player1)),
+							_user$project$Common$Hand(player1),
+							_user$project$Common$OutOfPlay),
 						_1: {
 							ctor: '::',
-							_0: A3(
+							_0: A4(
 								_user$project$Main$cl,
 								13,
 								_user$project$Cards$cat,
-								_user$project$Common$Hand(player2)),
+								_user$project$Common$Hand(player2),
+								_user$project$Common$OutOfPlay),
 							_1: {
 								ctor: '::',
-								_0: A3(
+								_0: A4(
 									_user$project$Main$cl,
 									14,
 									_user$project$Cards$dino,
-									_user$project$Common$Hand(player2)),
+									_user$project$Common$Hand(player2),
+									_user$project$Common$OutOfPlay),
 								_1: {
 									ctor: '::',
-									_0: A3(
+									_0: A4(
 										_user$project$Main$cl,
 										2,
 										_user$project$Cards$bith,
-										_user$project$Common$Hand(player2)),
+										_user$project$Common$Hand(player2),
+										_user$project$Common$OutOfPlay),
 									_1: {
 										ctor: '::',
-										_0: A3(
+										_0: A4(
 											_user$project$Main$cl,
 											3,
 											_user$project$Cards$bith,
-											A2(_user$project$Common$Board, player1, _user$project$Common$One)),
+											_user$project$Common$Board(player1),
+											_user$project$Common$One),
 										_1: {
 											ctor: '::',
-											_0: A3(
+											_0: A4(
 												_user$project$Main$cl,
 												4,
 												_user$project$Cards$bith,
-												A2(_user$project$Common$Board, player2, _user$project$Common$One)),
+												_user$project$Common$Board(player2),
+												_user$project$Common$One),
 											_1: {
 												ctor: '::',
-												_0: A3(
+												_0: A4(
 													_user$project$Main$cl,
 													5,
 													_user$project$Cards$bith,
-													_user$project$Common$Graveyard(player2)),
+													_user$project$Common$Graveyard(player2),
+													_user$project$Common$OutOfPlay),
 												_1: {
 													ctor: '::',
-													_0: A3(
+													_0: A4(
 														_user$project$Main$cl,
 														6,
 														_user$project$Cards$bith,
-														_user$project$Common$Graveyard(player1)),
+														_user$project$Common$Graveyard(player1),
+														_user$project$Common$OutOfPlay),
 													_1: {
 														ctor: '::',
-														_0: A3(
+														_0: A4(
 															_user$project$Main$cl,
 															7,
 															_user$project$Cards$bith,
-															_user$project$Common$Deck(player1)),
+															_user$project$Common$Deck(player1),
+															_user$project$Common$OutOfPlay),
 														_1: {
 															ctor: '::',
-															_0: A3(
+															_0: A4(
 																_user$project$Main$cl,
 																8,
 																_user$project$Cards$bith,
-																_user$project$Common$Deck(player1)),
+																_user$project$Common$Deck(player1),
+																_user$project$Common$OutOfPlay),
 															_1: {
 																ctor: '::',
-																_0: A3(
+																_0: A4(
 																	_user$project$Main$cl,
 																	9,
 																	_user$project$Cards$bith,
-																	_user$project$Common$Deck(player1)),
+																	_user$project$Common$Deck(player1),
+																	_user$project$Common$OutOfPlay),
 																_1: {
 																	ctor: '::',
-																	_0: A3(
+																	_0: A4(
 																		_user$project$Main$cl,
 																		10,
 																		_user$project$Cards$bith,
-																		_user$project$Common$Deck(player2)),
+																		_user$project$Common$Deck(player2),
+																		_user$project$Common$OutOfPlay),
 																	_1: {ctor: '[]'}
 																}
 															}

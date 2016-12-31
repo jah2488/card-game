@@ -44,9 +44,9 @@ newPlayer name =
     }
 
 
-cl : Int -> Card -> Location -> MetaCard
-cl id c l =
-    { id = id, card = c, loc = l, active = False, target = False }
+cl : Int -> Card -> Location -> Placement -> MetaCard
+cl id c l p =
+    { id = id, card = c, loc = l, active = False, target = False, placement = p }
 
 
 init : ( Game, Cmd Msg )
@@ -62,20 +62,20 @@ init =
           , playerOne = player1
           , playerTwo = player2
           , cards =
-                [ (cl 1 bith (Hand player1))
-                , (cl 11 cat (Hand player1))
-                , (cl 12 dino (Hand player1))
-                , (cl 13 cat (Hand player2))
-                , (cl 14 dino (Hand player2))
-                , (cl 2 bith (Hand player2))
-                , (cl 3 bith (Board player1 One))
-                , (cl 4 bith (Board player2 One))
-                , (cl 5 bith (Graveyard player2))
-                , (cl 6 bith (Graveyard player1))
-                , (cl 7 bith (Deck player1))
-                , (cl 8 bith (Deck player1))
-                , (cl 9 bith (Deck player1))
-                , (cl 10 bith (Deck player2))
+                [ (cl 1 bith (Hand player1) OutOfPlay)
+                , (cl 11 cat (Hand player1) OutOfPlay)
+                , (cl 12 dino (Hand player1) OutOfPlay)
+                , (cl 13 cat (Hand player2) OutOfPlay)
+                , (cl 14 dino (Hand player2) OutOfPlay)
+                , (cl 2 bith (Hand player2) OutOfPlay)
+                , (cl 3 bith (Board player1) One)
+                , (cl 4 bith (Board player2) One)
+                , (cl 5 bith (Graveyard player2) OutOfPlay)
+                , (cl 6 bith (Graveyard player1) OutOfPlay)
+                , (cl 7 bith (Deck player1) OutOfPlay)
+                , (cl 8 bith (Deck player1) OutOfPlay)
+                , (cl 9 bith (Deck player1) OutOfPlay)
+                , (cl 10 bith (Deck player2) OutOfPlay)
                 ]
           , time = 0
           }
@@ -94,7 +94,7 @@ updateCards activeCard card =
 targetCards : MetaCard -> Game -> MetaCard -> MetaCard
 targetCards activeCard game currentCard =
     case currentCard.loc of
-        Board player _ ->
+        Board player ->
             if player == game.playerTwo then
                 { currentCard | target = True }
             else
@@ -123,7 +123,7 @@ resolveAttack : MetaCard -> Game -> MetaCard -> MetaCard
 resolveAttack targetCard game currentCard =
     let
         defaultCard =
-            (cl -1 bith (Graveyard game.playerOne))
+            (cl -1 bith (Graveyard game.playerOne) OutOfPlay)
 
         activeCard =
             List.filter (\card -> card.active == True) game.cards
@@ -146,7 +146,7 @@ resolveAttack targetCard game currentCard =
 playCard : MetaCard -> Game -> MetaCard -> MetaCard
 playCard activeCard game currentCard =
     if activeCard.id == currentCard.id then
-        { currentCard | loc = Board game.playerOne (cardsOn (Board game.playerOne One) game.cards), active = False }
+        { currentCard | loc = Board game.playerOne, active = False, placement = cardsOn (Board game.playerOne) game.cards }
     else
         currentCard
 
@@ -154,39 +154,10 @@ playCard activeCard game currentCard =
 cardsOn : Location -> List MetaCard -> Placement
 cardsOn location cards =
     let
-        cardCount =
+        amount =
             List.length <| List.filter (\x -> x.loc == location) cards
     in
-        case (cardCount + 1) of
-            1 ->
-                One
-
-            2 ->
-                Two
-
-            3 ->
-                Three
-
-            4 ->
-                Four
-
-            5 ->
-                Five
-
-            6 ->
-                Six
-
-            7 ->
-                Seven
-
-            8 ->
-                Eight
-
-            9 ->
-                Nine
-
-            _ ->
-                One
+        intToPlacement (amount + 1)
 
 
 update : Msg -> Game -> ( Game, Cmd Msg )
@@ -235,7 +206,7 @@ actions game mc x1 y1 =
         ]
     else if mc.active == True then
         case mc.loc of
-            Board player _ ->
+            Board player ->
                 if player == game.playerOne then
                     [ text_
                         [ x x1
@@ -354,7 +325,7 @@ cardOffset game idx cl =
 
         y =
             case cl.loc of
-                Board player _ ->
+                Board player ->
                     if player == game.playerOne then
                         20
                     else
@@ -377,11 +348,14 @@ cardOffset game idx cl =
         x =
             let
                 place =
-                    List.filter (\x -> x.loc == cl.loc) game.cards
-                        |> indexOf cl
-                        |> Maybe.withDefault idx
+                    if cl.placement == OutOfPlay then
+                        List.filter (\x -> x.loc == cl.loc) game.cards
+                            |> indexOf cl
+                            |> Maybe.withDefault idx
+                    else
+                        placementToInt cl.placement
             in
-                ((gutter + ((place + 1) * offset) // 2))
+                gutter + (place * offset) // 2
     in
         viewCard game cl x y
 
