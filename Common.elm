@@ -14,8 +14,20 @@ type Msg
     | ClearSelection
 
 
+type Placement
+    = One
+    | Two
+    | Three
+    | Four
+    | Five
+    | Six
+    | Seven
+    | Eight
+    | Nine
+
+
 type Location
-    = Board Player
+    = Board Player Placement
     | Hand Player
     | Deck Player
     | Graveyard Player

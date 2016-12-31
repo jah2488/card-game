@@ -3,9 +3,19 @@ module Cards exposing (..)
 import Common exposing (..)
 
 
-b : Card
-b =
-    blank "fizz" 1 1 1
+bith : Card
+bith =
+    blank "bith" 1 1 1
+
+
+cat : Card
+cat =
+    blank "cat" 1 2 1
+
+
+dino : Card
+dino =
+    blank "dino" 2 1 1
 
 
 blank : String -> Int -> Int -> Int -> Card

@@ -36,6 +36,15 @@ var _user$project$Common$Active = function (a) {
 	return {ctor: 'Active', _0: a};
 };
 var _user$project$Common$NoOp = {ctor: 'NoOp'};
+var _user$project$Common$Nine = {ctor: 'Nine'};
+var _user$project$Common$Eight = {ctor: 'Eight'};
+var _user$project$Common$Seven = {ctor: 'Seven'};
+var _user$project$Common$Six = {ctor: 'Six'};
+var _user$project$Common$Five = {ctor: 'Five'};
+var _user$project$Common$Four = {ctor: 'Four'};
+var _user$project$Common$Three = {ctor: 'Three'};
+var _user$project$Common$Two = {ctor: 'Two'};
+var _user$project$Common$One = {ctor: 'One'};
 var _user$project$Common$Graveyard = function (a) {
 	return {ctor: 'Graveyard', _0: a};
 };
@@ -45,6 +54,7 @@ var _user$project$Common$Deck = function (a) {
 var _user$project$Common$Hand = function (a) {
 	return {ctor: 'Hand', _0: a};
 };
-var _user$project$Common$Board = function (a) {
-	return {ctor: 'Board', _0: a};
-};
+var _user$project$Common$Board = F2(
+	function (a, b) {
+		return {ctor: 'Board', _0: a, _1: b};
+	});

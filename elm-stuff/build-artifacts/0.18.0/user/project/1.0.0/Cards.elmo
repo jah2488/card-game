@@ -2,4 +2,6 @@ var _user$project$Cards$blank = F4(
 	function (name, str, hp, cost) {
 		return {name: name, str: str, maxStr: str, hp: hp, maxHp: hp, cost: cost};
 	});
-var _user$project$Cards$b = A4(_user$project$Cards$blank, 'fizz', 1, 1, 1);
+var _user$project$Cards$dino = A4(_user$project$Cards$blank, 'dino', 2, 1, 1);
+var _user$project$Cards$cat = A4(_user$project$Cards$blank, 'cat', 1, 2, 1);
+var _user$project$Cards$bith = A4(_user$project$Cards$blank, 'bith', 1, 1, 1);
